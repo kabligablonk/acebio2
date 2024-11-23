@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import time
 import PySimpleGUI as sg
 import Data
-
+ 
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
