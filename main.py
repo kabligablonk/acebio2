@@ -1,7 +1,5 @@
 import RPi.GPIO as GPIO
 import time
-import json
-import os
 import PySimpleGUI as sg
 import Data
 
@@ -23,54 +21,28 @@ GPIO.setup(20, GPIO.OUT)
 led_pins = [5, 6, 13, 19, 26, 12, 16, 20]
 
 # State management
-state_file = 'state.json'
-
-def read_state():
-    default_state = {'dictionary_index': 1, 'submit_pressed': False}
-    if os.path.exists(state_file) and os.path.getsize(state_file) > 0:
-        with open(state_file, 'r') as f:
-            try:
-                state = json.load(f)
-                for key in default_state:
-                    if key not in state:
-                        state[key] = default_state[key]
-                return state
-            except json.JSONDecodeError:
-                return default_state
-    else:
-        return default_state
-
-def write_state(state):
-    with open(state_file, 'w') as f:
-        json.dump(state, f)
-
-state = read_state()
-dictionary_index = state['dictionary_index']
-submit_pressed = state['submit_pressed']
+state = {'dictionary_index': 1, 'submit_pressed': False}
 
 def increment():
-    global dictionary_index
-    dictionary_index += 1
-    write_state({'dictionary_index': dictionary_index, 'submit_pressed': submit_pressed})
+    global state
+    state['dictionary_index'] += 1
     led_on_off()
 
 def decrement():
-    global dictionary_index
-    if dictionary_index > 1:
-        dictionary_index -= 1
-        write_state({'dictionary_index': dictionary_index, 'submit_pressed': submit_pressed})
+    global state
+    if state['dictionary_index'] > 1:
+        state['dictionary_index'] -= 1
         led_on_off()
 
 def submit():
-    global submit_pressed
-    submit_pressed = True
-    write_state({'dictionary_index': dictionary_index, 'submit_pressed': submit_pressed})
+    global state
+    state['submit_pressed'] = True
     led_on_off()
 
 def led_on_off():
     for pin in led_pins:
         GPIO.output(pin, GPIO.LOW)
-    for i in range(dictionary_index):
+    for i in range(state['dictionary_index']):
         if i < len(led_pins):
             GPIO.output(led_pins[i], GPIO.HIGH)
 
@@ -107,21 +79,17 @@ try:
         event, values = window.read(timeout=100)
         if event == sg.WIN_CLOSED or event == "Exit":
             break
-        elif event == "Get Info" or submit_pressed:
+        elif event == "Get Info" or state['submit_pressed']:
             try:
                 index = int(values['-INPUT-'])
                 result = get_info(index)
                 window['-RESULT-'].update(result)
                 window['-INPUT-'].update("")
-                submit_pressed = False
-                write_state({'dictionary_index': dictionary_index, 'submit_pressed': submit_pressed})
+                state['submit_pressed'] = False
             except ValueError as e:
                 sg.popup_error(f"Enter a valid index. \n Error: {e}")
 
-        state = read_state()
-        dictionary_index = state['dictionary_index']
-        if dictionary_index is not None:
-            window['-INPUT-'].update(dictionary_index)
+        window['-INPUT-'].update(state['dictionary_index'])
 
         input_17 = GPIO.input(17)
         input_27 = GPIO.input(27)
