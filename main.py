@@ -55,7 +55,7 @@ information = Data.information
 
 def get_info(index):
     keys = list(information.keys())
-    if index < len(keys):
+    if 0 <= index < len(keys):
         key = keys[index]
         try:
             return int(information[key])
@@ -63,14 +63,13 @@ def get_info(index):
             return information[key]
     else:
         return "Index out of range"
-
 layout = [
-    [sg.Text("Index (Part name)"), sg.Input(key='-INPUT-')],
-    [sg.Text("Results (Part info):", size=(0, 10), key='-PART-'), sg.Text("", key='-RESULT-', size=(50, 10), font=(32),)],
-    [sg.Button("Get Info"), sg.Button("Exit")]
+    [sg.Text("Index (Part name)", font=("Helvetica", 14)), sg.Input(key='-INPUT-', font=("Helvetica", 14), size=(10, 1))],
+    [sg.Text("Results (Part info):", size=(0, 10), key='-PART-', font=("Helvetica", 14)), sg.Text("", key='-RESULT-', size=(50, 10), font=("Helvetica", 14))],
+    [sg.Button("Get Info", font=("Helvetica", 14), button_color=('white', 'blue')), sg.Button("Exit", font=("Helvetica", 14), button_color=('white', 'red'))]
 ]
 
-window = sg.Window("Group 3 ACEBIO", layout, size=(700, 400), resizable=True)
+window = sg.Window("Group 3 ACEBIO", layout, size=(800, 400), resizable=True, element_padding=(10, 10))
 
 # Update the main loop to remove redundant submit call
 try:
