@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import time
 import PySimpleGUI as sg
 import Data
- 
+
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -26,25 +26,24 @@ state = {'dictionary_index': 1, 'submit_pressed': False}
 def increment():
     global state
     state['dictionary_index'] += 1
+    state['submit_pressed'] = True
     led_on_off()
+    update_info()
 
 def decrement():
     global state
     if state['dictionary_index'] > 1:
         state['dictionary_index'] -= 1
+        state['submit_pressed'] = True
         led_on_off()
+        update_info()
 
-def submit():
+def update_info():
     global state
-    state['submit_pressed'] = True
-    led_on_off()
-
-def led_on_off():
-    for pin in led_pins:
-        GPIO.output(pin, GPIO.LOW)
-    for i in range(state['dictionary_index']):
-        if i < len(led_pins):
-            GPIO.output(led_pins[i], GPIO.HIGH)
+    index = state['dictionary_index']
+    result = get_info(index)
+    window['-RESULT-'].update(result)
+    window['-INPUT-'].update("")
 
 def debounce(pin):
     time.sleep(0.05)
@@ -73,6 +72,7 @@ layout = [
 
 window = sg.Window("Group 3 ACEBIO", layout, size=(700, 400), resizable=True)
 
+# Update the main loop to remove redundant submit call
 try:
     prev_input_17 = prev_input_27 = prev_input_22 = GPIO.HIGH
     while True:
@@ -82,9 +82,8 @@ try:
         elif event == "Get Info" or state['submit_pressed']:
             try:
                 index = int(values['-INPUT-'])
-                result = get_info(index)
-                window['-RESULT-'].update(result)
-                window['-INPUT-'].update("")
+                state['dictionary_index'] = index
+                update_info()
                 state['submit_pressed'] = False
             except ValueError as e:
                 sg.popup_error(f"Enter a valid index. \n Error: {e}")
